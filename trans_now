@@ -8,7 +8,7 @@ do
     then
         printf "\ec"
         echo "$sel" > /tmp/trans_cache
-        /usr/local/bin/trans "$sel"
+        /usr/local/bin/trans "$sel" $@
     fi
     sleep 0.3
 done
