@@ -1,5 +1,19 @@
 #!/usr/bin/env bash
+# clean cache
 echo > /tmp/trans_cache
+
+# create cards in the clipboard upon translation
+if [ $1 == "--anki" ]
+then
+    ANKI=true
+    shift
+    # trans color it's output, we don't need this in cards
+    alias stripcolors='sed "s/\[\([0-9]\{1,2\}\(;[0-9]\{1,2\}\)\?\)\?[mGK]//g"'
+fi
+
+# a trick to output to screen and variable too
+exec 5>&1
+
 while :
 do
     sel=$(xsel --primary)
@@ -8,7 +22,17 @@ do
     then
         printf "\ec"
         echo "$sel" > /tmp/trans_cache
-        /usr/local/bin/trans "$sel" $@
+        TRANS_OUT="$(/usr/local/bin/trans "$sel" $@ | tee /dev/fd/5)"
+        if [ $ANKI == "true" ]
+        then
+            # extract 3rd line from trans output, strip of colours
+            TRANSLATION="$(sed -e 's/\x1B\[\([0-9]\{1,2\}\(;[0-9]\{1,2\}\)\?\)\?[mGK]//g' -ne 3p<<< $TRANS_OUT)"
+            # put into primary clipboard
+            echo -en "> $sel\n\n$TRANSLATION" | xclip -selection c
+            # Don't retranslate the new content
+            echo "$TRANSLATION" > /tmp/trans_cache
+        fi
     fi
+    # It would be great to wait until mouse click up event here rather than sleep
     sleep 0.3
 done
