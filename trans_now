@@ -23,7 +23,7 @@ do
         printf "\ec"
         echo "$sel" > /tmp/trans_cache
         TRANS_OUT="$(/usr/local/bin/trans "$sel" $@ | tee /dev/fd/5)"
-        if [ $ANKI == "true" ]
+        if [[ $ANKI == "true" ]]
         then
             # extract 3rd line from trans output, strip of colours
             TRANSLATION="$(sed -e 's/\x1B\[\([0-9]\{1,2\}\(;[0-9]\{1,2\}\)\?\)\?[mGK]//g' -ne 3p<<< $TRANS_OUT)"
